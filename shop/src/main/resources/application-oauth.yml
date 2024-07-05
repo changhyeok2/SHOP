@@ -1,0 +1,28 @@
+spring:
+  security:
+    oauth2:
+      client:
+        registration: #OAuth2 클라이언트 등록 정보를 설정
+          kakao:
+            client-id: 43dd475c7d784b14d804ecc3265ee4b0
+            scope:
+              - id
+              - profile_nickname
+              - account_email
+          authorization-grant-type: authorization_code
+          redirect-uri: members/kakao
+          client-name: Kakao
+          client-authentication-method: client_secret_post
+
+          #OAuth2 제공자 정보를 설정
+          provider:
+            kakao:
+              #카카오 인증 요청 URI를 지정
+              authorization-uri: https://kauth.kakao.com/oauth/authorize
+              token-uri: https://kauth.kakao.com/oauth/token
+              user-info-uri: https://kapi.kakao.com/v2/user/me
+              user-name-attribute: id
+
+kakao:
+  default:
+    password: kakao

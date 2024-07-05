@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.green.shop.cart.mapper.CartMapper">
+
+    <!-- 장바구니 생성 -->
+    <insert id="insertCart" parameterType="cartDto" useGeneratedKeys="true" keyProperty="cartId" keyColumn="cart_id">
+        INSERT INTO cart (member_id)
+        VALUES (#{memberId})
+    </insert>
+
+    <!-- 장바구니에 상품 추가 -->
+    <insert id="insertCartItem" parameterType="cartItemDto" useGeneratedKeys="true" keyProperty="cartItemId" keyColumn="cart_item_id">
+        INSERT INTO cart_item (cart_id, item_id, count)
+        VALUES (#{cartId}, #{itemId}, #{count})
+    </insert>
+
+    <!-- 로그인한 회원에 대한 장바구니가 존재하는지 확인 -->
+    <select id="findMemberCart" parameterType="Long" resultType="cartDto">
+        SELECT *
+        FROM cart
+        WHERE member_id = #{memberId}
+    </select>
+
+    <!-- 장바구니에 해당 상품이 존재하는지 확인 -->
+    <select id="findItemInCart" parameterType="map" resultType="cartItemDto">
+        SELECT *
+        FROM cart_item
+        WHERE cart_id=#{cartId} AND item_id=#{itemId}
+    </select>
+
+    <!-- 장바구니에 추가된 상품의 수량 변경 -->
+    <update id="updateCount" parameterType="map">
+        UPDATE cart_item
+        SET count=#{count}
+        WHERE cart_item_id = #{cartItemId}
+    </update>
+
+    <!-- 장바구니 상품 조회 -->
+    <select id="findCartDetail" parameterType="Long" resultType="cartDetailDto">
+        SELECT cart_item_id, cart_id, item_name, price, count, img_url
+        FROM cart_item ci JOIN item i ON ci.item_id = i.item_id
+            JOIN item_img im ON im.item_id = i.item_id
+        WHERE ci.cart_id = #{cartId} AND im.rep_img_yn='Y'
+    </select>
+
+    <!-- 장바구니의 수량 변경을 위해 본인인지 확인 -->
+    <select id="findMemberId" parameterType="Long">
+        SELECT c.member_id
+        FROM cart c JOIN cart_item ci ON c.cart_id = ci.cart_id
+        WHERE cart_item_id=#{cartItemId}
+    </select>
+
+    <!-- 장바구니의 수량 변경을 위해 cart 정보 확인 -->
+    <select id="findCartItem" parameterType="Long" resultType="cartItemDto">
+        SELECT *
+        FROM cart c JOIN cart_item ci ON c.cart_id = ci.cart_id
+        WHERE cart_item_id=#{cartItemId}
+    </select>
+
+    <!-- 장바구니 상품 삭제 -->
+    <delete id="deleteCartItem" parameterType="Long">
+        DELETE FROM cart_item
+        WHERE cart_item_id=#{cartItemId}
+    </delete>
+</mapper>

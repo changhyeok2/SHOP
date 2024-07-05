@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.green.shop.item.mapper.ItemMapper">
+
+<!--    <resultMap id="itemDtoMap" type="itemDto">-->
+<!--        <id property="itemId" column="item_id" />-->
+<!--        <result property="itemName" column="item_name" />-->
+<!--        <result property="stockNumber" column="stock_number" />-->
+<!--        <result property="itemDetail" column="item_detail" />-->
+<!--        <result property="itemSellStatus" column="item_sell_status" />-->
+<!--        <result property="regTime" column="reg_time" />-->
+<!--        <result property="updateTime" column="update_time" />-->
+<!--    </resultMap>-->
+
+    <insert id="itemInsert" parameterType="itemDto" useGeneratedKeys="true" keyProperty="itemId" keyColumn="item_id">
+        INSERT INTO item(item_name, price, stock_number, item_detail, item_sell_status)
+        VALUES (#{itemName}, #{price}, #{stockNumber}, #{itemDetail}, #{itemSellStatus})
+    </insert>
+
+    <insert id="insertItemImg" parameterType="itemImgDto">
+        INSERT INTO item_img(img_name, ori_img_name, img_url, rep_img_yn, item_id)
+        VALUES(#{imgName}, #{oriImgName}, #{imgUrl}, #{repImgYn}, #{itemId})
+    </insert>
+    <!-- 전체 목록 조회 -->
+<!--    <select id="itemListAll" resultMap="itemDtoMap">-->
+    <select id="itemListAll" resultType="itemDto">
+        SELECT item_id, item_name, price, stock_number, item_detail, item_sell_status, reg_time, update_time
+        FROM item
+    </select>
+
+    <!-- 상품 검색하기 -->
+    <select id="selectItem" resultType="itemDto">
+        SELECT item_id, item_name, price, stock_number, item_detail, item_sell_status, reg_time, update_time
+        FROM item
+        WHERE item_id=#{itemId}
+    </select>
+    <!-- 상품번호에 맞는 이미지 검색 -->
+    <select id="selectItemImg" resultType="itemImgDto">
+        SELECT item_img_id, img_name, ori_img_name, img_url, rep_img_yn, item_id, reg_time, update_time
+        FROM item_img
+        WHERE item_id = #{itemId}
+        ORDER BY item_img_id
+    </select>
+
+    <!-- 이미지 변경을 위해 이미지 번호에 맞는 이미지 정보 찾기-->
+    <select id="selectItemImgId" resultType="itemImgDto">
+        SELECT item_img_id, img_name, ori_img_name, img_url, rep_img_yn, item_id, reg_time, update_time
+        FROM item_img
+        WHERE item_img_id = #{itemImgId}
+    </select>
+
+    <!-- 상품 수정하기 -->
+    <update id="updateItem" parameterType="itemDto">
+        UPDATE item
+        SET item_name = #{itemName}, price=#{price}, stock_number=#{stockNumber},
+            item_detail=#{itemDetail}, item_sell_status=#{itemSellStatus}, update_time=#{updateTime}
+        WHERE item_id=#{itemId}
+    </update>
+
+    <update id="updateItemImg" parameterType="itemImgDto">
+        UPDATE item_img
+        SET img_name=#{imgName}, ori_img_name=#{oriImgName}, img_url=#{imgUrl},
+            rep_img_yn=#{repImgYn}, item_id=#{itemId}
+        WHERE item_img_id=#{itemImgId}
+    </update>
+
+    <sql id="itemSearchConditions">
+        <if test="itemSearchDto.searchDateType != null and
+                    itemSearchDto.searchDateType != ''">
+            <if test="itemSearchDto.searchDateType.equals('1d')">
+                AND reg_time &gt; DATE_SUB(NOW(), INTERVAL 1 DAY)
+            </if>
+            <if test="itemSearchDto.searchDateType.equals('1w')">
+                AND reg_time &gt; DATE_SUB(NOW(), INTERVAL 1 WEEK)
+            </if>
+            <if test="itemSearchDto.searchDateType.equals('1m')">
+                AND reg_time &gt; DATE_SUB(NOW(), INTERVAL 1 MONTH)
+            </if>
+            <if test="itemSearchDto.searchDateType.equals('6m')">
+                AND reg_time &gt; DATE_SUB(NOW(), INTERVAL 6 MONTH)
+            </if>
+        </if>
+        <if test="itemSearchDto.searchSellStatus != null">
+            AND item_sell_status = #{itemSearchDto.searchSellStatus}
+        </if>
+        <if test="itemSearchDto.searchBy != null and
+                    itemSearchDto.searchText != ''">
+            <choose>
+                <when test="(itemSearchDto.searchBy).equals('itemName')">
+                    AND item_name LIKE CONCAT('%', #{itemSearchDto.searchText}, '%')
+                </when>
+                <when test="(itemSearchDto.searchBy).equals('itemDetail')">
+                    AND item_detail LIKE CONCAT('%', #{itemSearchDto.searchText}, '%')
+                </when>
+            </choose>
+        </if>
+    </sql>
+
+    <!-- 전체 목록(페이징)   -->
+    <select id="itemListPage" parameterType="map" resultType="itemDto">
+        SELECT item_id, item_name, price, stock_number,
+               item_detail, item_sell_status, reg_time, update_time
+        FROM item
+        <where>
+            <include refid="itemSearchConditions" />
+        </where>
+        ORDER BY item_id DESC
+        LIMIT #{pageSize} OFFSET #{page};
+        <!--  limit : 표시할 데이터의 양 , offset : 시작 위치 (0부터 시작)    -->
+    </select>
+
+    <!-- 페이징 처리를 위한 전체 게시글 개수 세기 -->
+    <select id="countAdminItems" parameterType="map" resultType="int">
+        SELECT count(*)
+        FROM item
+        <where>
+            <include refid="itemSearchConditions" />
+        </where>
+    </select>
+
+    <select id="mainSelect" parameterType="map" resultType="itemMainDto">
+        SELECT i.item_id, i.item_name, i.item_detail, ii.img_url, i.price
+        FROM item i JOIN item_img ii
+            ON i.item_id = ii.item_id
+        WHERE ii.rep_img_yn = 'Y'
+            <include refid="itemSearchConditions" />
+        ORDER BY i.item_id DESC
+        LIMIT #{pageSize} OFFSET #{page}
+    </select>
+
+</mapper>

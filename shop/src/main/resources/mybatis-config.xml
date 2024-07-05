@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration
+        PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+    <settings>
+        <setting name="mapUnderscoreToCamelCase" value="true"/>
+    </settings>
+
+    <typeAliases>
+        <typeAlias alias="itemDto" type="com.green.shop.item.dto.ItemDto" />
+        <typeAlias alias="itemImgDto" type="com.green.shop.item.dto.ItemImgDto" />
+        <typeAlias alias="itemSearchDto" type="com.green.shop.item.dto.ItemSearchDto" />
+        <typeAlias alias="itemMainDto" type="com.green.shop.item.dto.ItemMainDto" />
+        <typeAlias alias="memberDto" type="com.green.shop.member.dto.MemberDto" />
+        <typeAlias alias="orderDto" type="com.green.shop.order.dto.OrderDto" />
+        <typeAlias alias="orderItemDto" type="com.green.shop.order.dto.OrderItemDto" />
+        <typeAlias alias="orderHistDto" type="com.green.shop.order.dto.OrderHistDto"/>
+        <typeAlias alias="chartDto" type="com.green.shop.chart.ChartDto"/>
+        <typeAlias alias="cartDto" type="com.green.shop.cart.dto.CartDto"/>
+        <typeAlias alias="cartItemDto" type="com.green.shop.cart.dto.CartItemDto"/>
+        <typeAlias alias="cartDetailDto" type="com.green.shop.cart.dto.CartDetailDto"/>
+        <typeAlias alias="cartOrderDto" type="com.green.shop.cart.dto.CartOrderDto"/>
+    </typeAliases>
+
+</configuration>

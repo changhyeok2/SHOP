@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+<div>
+    <h1>chart</h1>
+
+    <table border="1px">
+        <tr>
+            <th>날짜</th>
+            <th>주문횟수</th>
+        </tr>
+        <tr th:each="orderCount : ${orderCounts}">
+            <!-- 날짜 형식 변경-->
+            <td th:text="${#dates.format(orderCount.orderDate, 'yyyy-MM-dd')}"></td>
+            <td th:text="${orderCount.count}"></td>
+        </tr>
+    </table>
+
+    <canvas id="myChart" width="400" height="200"></canvas>
+
+    <script th:inline="javascript">
+        async function showChart() {
+        let url = "/chart/data";
+
+        try{
+            const response = await fetch(url, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                cache: 'no-cache'
+
+        });
+
+        if (!response.ok) {
+            const errorMessage = await response.text();
+            throw new Error(`error message : ${errorMessage}`);
+
+        }
+
+        const responseData = await response.json();
+
+        if (!responseData || responseData.length === 0) {
+            throw new Error("empty response data");
+        }
+
+        const orderCounts = responseData;
+
+        const labels = orderCounts.map(item => fDate(new Date(item.orderDate)));
+        const chartData = orderCounts.map(item => item.count);
+
+        const ctx = document.getElementById('myChart').getContext('2d');
+
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Order Count',
+                    data: chartData,
+                    backgroundColor: 'rgba(120, 144, 22, 0.2)',
+                    borderColor: 'rgba(120, 144, 22, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: false,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+
+            });
+        } catch(error) {
+            alert(error.message);
+        }
+    }
+
+    function fDate(date) {
+        const year = date.getFullYear();
+        const month = date.getMonth() + 1;
+        const day = date.getDate();
+        return `${year}-${month}-${day}`;
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        showChart();
+    })
+    </script>
+
+</div>
+</body>
+</html>
